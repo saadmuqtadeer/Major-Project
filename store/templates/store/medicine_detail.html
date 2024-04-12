@@ -1,0 +1,28 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 d-flex align-items-center justify-content-center">
+                <img class="img-fluid custom-img" src="{{ medicine.image_url }}" alt="{{ medicine.name }}">
+            </div>
+            <div class="col-lg-6">
+                <h2>{{ medicine.name }}</h2>
+                <p><strong>Price:</strong> ${{ medicine.price }}</p>
+                <p><strong>Description:</strong> {{ medicine.description }}</p>
+                <p><strong>Manufacturer:</strong> {{ medicine.manufacturer }}</p>
+                <p><strong>Active Ingredients:</strong> {{ medicine.active_ingredients }}</p>
+                <p><strong>Alcohol Warning:</strong> {{ medicine.alcohol_warning }}</p>
+                <p><strong>Pregnancy Warning:</strong> {{ medicine.pregnancy_warning }}</p>
+                <p><strong>Breastfeeding Warning:</strong> {{ medicine.breastfeeding_warning }}</p>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+<style>
+    .custom-img {
+        width: 100%; /* Set the width to 100% to expand to the full width of the container */
+        max-height: 400px; /* Set a maximum height to maintain aspect ratio and prevent image distortion */
+    }
+</style>
