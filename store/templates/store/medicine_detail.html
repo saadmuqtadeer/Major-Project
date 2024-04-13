@@ -15,6 +15,14 @@
                 <p><strong>Alcohol Warning:</strong> {{ medicine.alcohol_warning }}</p>
                 <p><strong>Pregnancy Warning:</strong> {{ medicine.pregnancy_warning }}</p>
                 <p><strong>Breastfeeding Warning:</strong> {{ medicine.breastfeeding_warning }}</p>
+
+                <h3>Alternative Medicines:</h3>
+                <p>use only after doctor recommedation</p>
+                <ul>
+                    {% for related_medicine in related_medicines %}
+                        <li>{{ related_medicine }}</li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
     </div>

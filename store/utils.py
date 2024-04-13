@@ -31,7 +31,7 @@ def cookieCart(request):
 					'id': medicine.id,
 					'name': medicine.name,
 					'price': medicine.price,
-					'image': medicine.image
+					'image_url': medicine.image
 					},
 					'quantity': cart[i]['quantity'],
 					'get_total': total,

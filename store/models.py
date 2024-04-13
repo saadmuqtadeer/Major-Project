@@ -2,14 +2,19 @@ from django.db import models
 from django.contrib.auth.models import User
 
 # Create your models here.
-
 class Customer(models.Model):
-	user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
-	name = models.CharField(max_length=200, null=True)
-	email = models.CharField(max_length=200)
+    USER_TYPE_CHOICES = [
+        ('patient', 'Patient'),
+        ('doctor', 'Doctor'),
+    ]
 
-	def __str__(self):
-		return self.name
+    user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
+    name = models.CharField(max_length=200, null=True)
+    email = models.CharField(max_length=200)
+    user_type = models.CharField(max_length=20, choices=USER_TYPE_CHOICES, default='patient')
+
+    def __str__(self):
+        return self.name
 
 class Medicine(models.Model):
     name = models.CharField(max_length=200)

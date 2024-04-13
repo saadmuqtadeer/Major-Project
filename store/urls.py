@@ -11,4 +11,7 @@ urlpatterns = [
 	path('process_order/', views.processOrder, name="process_order"),
  
 	path('medicine/<int:medicine_id>/', views.medicine_detail, name='medicine_detail'),
+ 
+	path('login/', views.login_view, name='login'),
+	path('signup/', views.signup, name='signup'),
 ]
