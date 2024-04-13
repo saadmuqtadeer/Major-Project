@@ -169,3 +169,6 @@ def find_related_medicines(medicine):
         related_medicines.append(names[index])
 
     return related_medicines
+
+def user_location_view(request):
+    return render(request, 'store/maps.html')
