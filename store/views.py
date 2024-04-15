@@ -172,3 +172,202 @@ def find_related_medicines(medicine):
 
 def user_location_view(request):
     return render(request, 'store/maps.html')
+
+from django.shortcuts import render
+import random
+from django.http import JsonResponse
+import re
+import pandas as pd
+import pyttsx3
+from sklearn import preprocessing
+from sklearn.tree import DecisionTreeClassifier,_tree
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score
+from sklearn.svm import SVC
+import csv
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+training = pd.read_csv('C:/Users/saad/OneDrive/Desktop/CS comm/char/Data/Training.csv')
+testing= pd.read_csv('C:/Users/saad/OneDrive/Desktop/CS comm/char/Data/Testing.csv')
+cols= training.columns
+cols= cols[:-1]
+x = training[cols]
+y = training['prognosis']
+y1= y
+
+
+reduced_data = training.groupby(training['prognosis']).max()
+
+#mapping strings to numbers
+le = preprocessing.LabelEncoder()
+le.fit(y)
+y = le.transform(y)
+
+
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.33, random_state=42)
+testx    = testing[cols]
+testy    = testing['prognosis']  
+testy    = le.transform(testy)
+
+
+clf1  = DecisionTreeClassifier()
+clf = clf1.fit(x_train,y_train)
+print(clf.score(x_train,y_train))
+print ("cross result========")
+scores = cross_val_score(clf, x_test, y_test, cv=3)
+print (scores)
+print (scores.mean())
+
+
+model=SVC()
+model.fit(x_train,y_train)
+print("for svm: ")
+print(model.score(x_test,y_test))
+
+importances = clf.feature_importances_
+indices = np.argsort(importances)[::-1]
+features = cols
+
+def readn(nstr):
+    engine = pyttsx3.init()
+
+    engine.setProperty('voice', "english+f5")
+    engine.setProperty('rate', 130)
+
+    engine.say(nstr)
+    engine.runAndWait()
+    engine.stop()
+
+
+severityDictionary=dict()
+description_list = dict()
+precautionDictionary=dict()
+
+symptoms_dict = {}
+
+for index, symptom in enumerate(x):
+       symptoms_dict[symptom] = index
+
+tree_ = clf.tree_
+cols = [
+    cols[i] if i != _tree.TREE_UNDEFINED else "undefined!"
+    for i in tree_.feature
+]
+
+chk_dis=",".join(cols).split(",")
+symptoms_present = []
+
+def check_pattern(dis_list,inp):
+    pred_list=[]
+    inp=inp.replace(' ','_')
+    patt = f"{inp}"
+    regexp = re.compile(patt)
+    pred_list=[item for item in dis_list if regexp.search(item)]
+    if(len(pred_list)>0):
+        return 1,pred_list
+    else:
+        return 0,[]
+    
+def getDescription():
+    global description_list
+    with open('C:/Users/saad/OneDrive/Desktop/CS comm/char/MasterData/symptom_Description.csv') as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count = 0
+        for row in csv_reader:
+            _description={row[0]:row[1]}
+            description_list.update(_description)
+
+
+
+def getSeverityDict():
+    global severityDictionary
+    with open('C:/Users/saad/OneDrive/Desktop/CS comm/char/MasterData/symptom_severity.csv') as csv_file:
+
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count = 0
+        try:
+            for row in csv_reader:
+                _diction={row[0]:int(row[1])}
+                severityDictionary.update(_diction)
+        except:
+            pass
+
+
+def getprecautionDict():
+    global precautionDictionary
+    with open('C:/Users/saad/OneDrive/Desktop/CS comm/char/MasterData/symptom_precaution.csv') as csv_file:
+
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count = 0
+        for row in csv_reader:
+            _prec={row[0]:[row[1],row[2],row[3],row[4]]}
+            precautionDictionary.update(_prec)  
+
+
+le = 0
+def handle_user_input(symptom):
+    conf, cnf_dis = check_pattern(chk_dis, symptom)
+    le = len(cnf_dis)
+    response = ""
+    if conf == 1:
+        response += "Searches related to input:\n"
+        for num, it in enumerate(cnf_dis):
+            response += str(num) + ")" + it + "\n"
+    else:
+        response = "Enter valid symptom.\n"
+    return response
+
+cnt = 0
+def chatbot(request):
+    global cnt
+    if request.method == 'POST':
+        cnt = cnt + 1
+        if cnt == 1:
+            user_message = request.POST.get('message')
+            server_response = "Hello " + user_message + "!! Enter the symptom you are experiencing?"
+            return JsonResponse({'message': server_response})
+        elif cnt == 2:
+            user_message = request.POST.get('message')
+            server_response = handle_user_input(user_message)
+            if "Enter valid symptom." in server_response:
+                cnt -= 1
+                return JsonResponse({'message': server_response})
+            elif "Searches related to input:" in server_response:
+                if le > 1:
+                    server_response += "Select the one you meant (0 - {len(cnf_dis) - 1}):  "
+                else:
+                    server_response += "Enter valid symptom: "
+                return JsonResponse({'message': server_response})
+            else:
+                return JsonResponse({'message': server_response})
+    else:
+        initial_message = get_initial_message()
+        return render(request, 'store/chatbot.html', {'server_message': initial_message})
+
+
+
+def get_initial_message():
+    greetings = ["Hello! I am the HealthCare ChatBot. What is your name?", 
+                 "Hi there! I'm here to assist you with your health concerns. What's your name?",
+                 "Greetings! I'm the HealthCare ChatBot. What's your name?"]
+    return random.choice(greetings)
+
+
+def search(request):
+    query = request.GET.get('q')
+    results = []
+    if query:
+        # Perform search query on Medicine model
+        results = Medicine.objects.filter(
+            name__icontains=query
+            # Add other fields for search as needed
+        )
+    data = cartData(request)
+    cartItems = data['cartItems']
+    order = data['order']
+    items = data['items']
+    context = {'items':items, 'order':order, 'cartItems':cartItems}
+    
+    return render(request, 'store/search.html', {'medicines': results, 'query': query})
