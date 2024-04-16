@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# Create your models here.
 class Customer(models.Model):
     USER_TYPE_CHOICES = [
         ('patient', 'Patient'),
@@ -9,7 +8,7 @@ class Customer(models.Model):
     ]
 
     user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
-    name = models.CharField(max_length=200, null=True)
+    name = models.CharField(max_length=200)
     email = models.CharField(max_length=200)
     user_type = models.CharField(max_length=20, choices=USER_TYPE_CHOICES, default='patient')
 
@@ -80,7 +79,6 @@ class OrderItem(models.Model):
     def get_total(self):
         total = self.medicine.price * self.quantity  # Changed from 'product' to 'medicine'
         return total
-
 
 class ShippingAddress(models.Model):
 	customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True)

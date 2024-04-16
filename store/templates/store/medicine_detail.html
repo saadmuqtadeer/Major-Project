@@ -15,22 +15,32 @@
                 <p><strong>Alcohol Warning:</strong> {{ medicine.alcohol_warning }}</p>
                 <p><strong>Pregnancy Warning:</strong> {{ medicine.pregnancy_warning }}</p>
                 <p><strong>Breastfeeding Warning:</strong> {{ medicine.breastfeeding_warning }}</p>
-
-                <h3>Alternative Medicines:</h3>
-                <p>use only after doctor recommedation</p>
-                <ul>
-                    {% for related_medicine in related_medicines %}
-                        <li>{{ related_medicine }}</li>
-                    {% endfor %}
-                </ul>
             </div>
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        <h3>Alternative Medicines:</h3>
+        <p><em>Use only after doctor's prescription.</em></p>
+        <div class="row">
+            {% for related_medicine in related_medicines %}
+                <div class="col-lg-4 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ related_medicine.name }}</h5>
+                            <p class="card-text">{{ related_medicine.description | truncatewords_html:50 }}</p>
+                            <p class="card-text"><strong>Manufacturer:</strong> {{ related_medicine.manufacturer }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
     </div>
 {% endblock content %}
 
 <style>
     .custom-img {
-        width: 100%; /* Set the width to 100% to expand to the full width of the container */
-        max-height: 400px; /* Set a maximum height to maintain aspect ratio and prevent image distortion */
+        width: 100%;
+        max-height: 400px;
     }
 </style>

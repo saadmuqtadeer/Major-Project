@@ -7,40 +7,53 @@ from .utils import cookieCart, cartData, guestOrder
 import csv
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.models import User
 from .models import Customer
 from .forms import RegistrationForm
 from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
 
 def signup(request):
-    if request.method == 'POST':
-        form = RegistrationForm(request.POST)
-        if form.is_valid():
-            name = form.cleaned_data['name']
-            email = form.cleaned_data['email']
-            password = form.cleaned_data['password']
-            user_type = form.cleaned_data['user_type']
-            user = User.objects.create_user(username=name, email=email, password=password)
+    if request.method== 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        pass1 = request.POST.get('password1')
+        pass2 = request.POST.get('password2')
+        user_type = request.POST.get('user_type')
+        print(name, email, pass1, pass2, user_type)
+        if pass1 != pass2: 
+            error_message = "Your password and confrom password are same!!"
+            return render(request, 'store/signup.html', {'error_message': error_message})
+        else:
+            user = User.objects.create_user(username = name, email = email, password = pass1)
             customer = Customer.objects.create(user=user, name=name, email=email, user_type=user_type)
             return redirect('login')
-    else:
-        form = RegistrationForm()
-    return render(request, 'store/signup.html', {'form': form})
+    return render(request, 'store/signup.html')
 
 def login_view(request):
     error_message = None
     if request.method == 'POST':
-        email = request.POST['email']
-        password = request.POST['password']
-        user = authenticate(request, email=email, password=password)
+        name = request.POST.get('name')
+        password = request.POST.get('password')
+        user = authenticate(request, username = name, password = password)
+        print(name, password, user)
         if user is not None:
             login(request, user)
-            return redirect('store')
+            try:
+                user_type = user.customer.user_type
+                if user_type == 'doctor':
+                    return redirect('store')
+                else:
+                    return redirect('store')
+            except Customer.DoesNotExist:
+                pass
         else:
             error_message = 'Invalid email or password. Please try again.'
-    return render(request, 'store/login.html', {'error_message': error_message})
+            return render(request, 'store/login.html', {'error_message': error_message})
+    return render(request, 'store/login.html')
 
+def logout_view(request):
+    logout(request)
+    return redirect('store')
 
 def store(request):
 	data = cartData(request)
@@ -145,182 +158,57 @@ def medicine_detail(request, medicine_id):
     context = {'medicine': medicine, 'cartItems': cartItems, 'related_medicines': related_medicines}
     return render(request, 'store/medicine_detail.html', context)
 
+
 def find_related_medicines(medicine):
-    search_query = medicine.name  # Use medicine name as the search query
+    search_query = medicine.name
     related_medicines = []
 
-    csv_path = 'C:/Users/saad/OneDrive/Desktop/django_ecommerce_mod5-master/django_ecommerce_mod5-master/store/datasets/1mgadded.csv'  # Path to your CSV file
+    csv_path = 'C:/Users/saad/OneDrive/Desktop/django_ecommerce_mod5-master/django_ecommerce_mod5-master/store/datasets/1mgadded.csv'  # Replace 'path/to/dataset.csv' with the actual path to your dataset file
     names = []
+    descriptions = []
+    manufacturers = []
+    active_ingredients = []
+
+    # Read the dataset and extract relevant information
     with open(csv_path, 'r', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            names.append(row['cleaned_combined_text'])
+            names.append(row['name'])
+            descriptions.append(row['desc'])
+            manufacturers.append(row['manufacturer'])
+            active_ingredients.append(row['activeIngredient'])
 
-    # Calculate TF-IDF vectors for medicine names
+    # Combine name, description, manufacturer, and active ingredients into a single text
+    combined_text = [f"{name} {description} {manufacturer} {active_ingredient}" for name, description, manufacturer, active_ingredient in zip(names, descriptions, manufacturers, active_ingredients)]
+
+    # Calculate TF-IDF vectors
     vectorizer = TfidfVectorizer()
-    vectors = vectorizer.fit_transform(names + [search_query])
+    vectors = vectorizer.fit_transform(combined_text + [search_query])
     query_vector = vectors[-1]  # Vector representation of the search query
-    item_vectors = vectors[:-1]  # Vector representations of the medicine names
+    item_vectors = vectors[:-1]  # Vector representations of the medicine information
     similarities = cosine_similarity(query_vector, item_vectors).flatten()
 
     # Sort medicines based on similarity scores
-    sorted_indices = similarities.argsort()[::-1][:3]  # Get top 10 similar medicines
+    sorted_indices = similarities.argsort()[::-1][:3]  # Get top 3 similar medicines
     for index in sorted_indices:
-        related_medicines.append(names[index])
+        related_medicines.append({
+            'name': names[index],
+            'description': descriptions[index],
+            'manufacturer': manufacturers[index],
+            'active_ingredient': active_ingredients[index]
+        })
 
     return related_medicines
 
 def user_location_view(request):
-    return render(request, 'store/maps.html')
-
-from django.shortcuts import render
-import random
-from django.http import JsonResponse
-import re
-import pandas as pd
-import pyttsx3
-from sklearn import preprocessing
-from sklearn.tree import DecisionTreeClassifier,_tree
-import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import cross_val_score
-from sklearn.svm import SVC
-import csv
-import warnings
-warnings.filterwarnings("ignore", category=DeprecationWarning)
-
-training = pd.read_csv('C:/Users/saad/OneDrive/Desktop/CS comm/char/Data/Training.csv')
-testing= pd.read_csv('C:/Users/saad/OneDrive/Desktop/CS comm/char/Data/Testing.csv')
-cols= training.columns
-cols= cols[:-1]
-x = training[cols]
-y = training['prognosis']
-y1= y
-
-
-reduced_data = training.groupby(training['prognosis']).max()
-
-#mapping strings to numbers
-le = preprocessing.LabelEncoder()
-le.fit(y)
-y = le.transform(y)
-
-
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.33, random_state=42)
-testx    = testing[cols]
-testy    = testing['prognosis']  
-testy    = le.transform(testy)
-
-
-clf1  = DecisionTreeClassifier()
-clf = clf1.fit(x_train,y_train)
-print(clf.score(x_train,y_train))
-print ("cross result========")
-scores = cross_val_score(clf, x_test, y_test, cv=3)
-print (scores)
-print (scores.mean())
-
-
-model=SVC()
-model.fit(x_train,y_train)
-print("for svm: ")
-print(model.score(x_test,y_test))
-
-importances = clf.feature_importances_
-indices = np.argsort(importances)[::-1]
-features = cols
-
-def readn(nstr):
-    engine = pyttsx3.init()
-
-    engine.setProperty('voice', "english+f5")
-    engine.setProperty('rate', 130)
-
-    engine.say(nstr)
-    engine.runAndWait()
-    engine.stop()
-
-
-severityDictionary=dict()
-description_list = dict()
-precautionDictionary=dict()
-
-symptoms_dict = {}
-
-for index, symptom in enumerate(x):
-       symptoms_dict[symptom] = index
-
-tree_ = clf.tree_
-cols = [
-    cols[i] if i != _tree.TREE_UNDEFINED else "undefined!"
-    for i in tree_.feature
-]
-
-chk_dis=",".join(cols).split(",")
-symptoms_present = []
-
-def check_pattern(dis_list,inp):
-    pred_list=[]
-    inp=inp.replace(' ','_')
-    patt = f"{inp}"
-    regexp = re.compile(patt)
-    pred_list=[item for item in dis_list if regexp.search(item)]
-    if(len(pred_list)>0):
-        return 1,pred_list
-    else:
-        return 0,[]
-    
-def getDescription():
-    global description_list
-    with open('C:/Users/saad/OneDrive/Desktop/CS comm/char/MasterData/symptom_Description.csv') as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        line_count = 0
-        for row in csv_reader:
-            _description={row[0]:row[1]}
-            description_list.update(_description)
-
-
-
-def getSeverityDict():
-    global severityDictionary
-    with open('C:/Users/saad/OneDrive/Desktop/CS comm/char/MasterData/symptom_severity.csv') as csv_file:
-
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        line_count = 0
-        try:
-            for row in csv_reader:
-                _diction={row[0]:int(row[1])}
-                severityDictionary.update(_diction)
-        except:
-            pass
-
-
-def getprecautionDict():
-    global precautionDictionary
-    with open('C:/Users/saad/OneDrive/Desktop/CS comm/char/MasterData/symptom_precaution.csv') as csv_file:
-
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        line_count = 0
-        for row in csv_reader:
-            _prec={row[0]:[row[1],row[2],row[3],row[4]]}
-            precautionDictionary.update(_prec)  
-
-
-le = 0
-def handle_user_input(symptom):
-    conf, cnf_dis = check_pattern(chk_dis, symptom)
-    le = len(cnf_dis)
-    response = ""
-    if conf == 1:
-        response += "Searches related to input:\n"
-        for num, it in enumerate(cnf_dis):
-            response += str(num) + ")" + it + "\n"
-    else:
-        response = "Enter valid symptom.\n"
-    return response
+    data = cartData(request)
+    cartItems = data['cartItems']
+    return render(request, 'store/maps.html', {'cartItems':cartItems})
 
 cnt = 0
 def chatbot(request):
+    data = cartData(request)
+    cartItems = data['cartItems']
     global cnt
     if request.method == 'POST':
         cnt = cnt + 1
@@ -344,10 +232,10 @@ def chatbot(request):
                 return JsonResponse({'message': server_response})
     else:
         initial_message = get_initial_message()
-        return render(request, 'store/chatbot.html', {'server_message': initial_message})
+        return render(request, 'store/chatbot.html', {'server_message': initial_message, 'cartItems': cartItems})
 
 
-
+import random
 def get_initial_message():
     greetings = ["Hello! I am the HealthCare ChatBot. What is your name?", 
                  "Hi there! I'm here to assist you with your health concerns. What's your name?",
@@ -366,8 +254,11 @@ def search(request):
         )
     data = cartData(request)
     cartItems = data['cartItems']
-    order = data['order']
-    items = data['items']
-    context = {'items':items, 'order':order, 'cartItems':cartItems}
     
-    return render(request, 'store/search.html', {'medicines': results, 'query': query})
+    return render(request, 'store/search.html', {'medicines': results, 'query': query, 'cartItems' :cartItems})
+
+def doctor(request):
+    data = cartData(request)
+    cartItems = data['cartItems']
+    context = {'cartItems': cartItems}
+    return render(request, 'store/doctor.html', context)

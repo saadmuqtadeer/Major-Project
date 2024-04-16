@@ -13,8 +13,13 @@ urlpatterns = [
 	path('medicine/<int:medicine_id>/', views.medicine_detail, name='medicine_detail'),
  
 	path('login/', views.login_view, name='login'),
+	path('logout/', views.logout_view, name='logout'),
 	path('signup/', views.signup, name='signup'),
+ 
 	path('lab-tests/', views.user_location_view, name="maps"),
+ 
 	path('chatbot/', views.chatbot, name='chatbot'),
 	path('search/', views.search, name='search'),
+ 
+	path('doctor/', views.doctor, name='doctor'),
 ]

@@ -34,13 +34,13 @@ function searchAndShowOnMap() {
         function (position) {
           const latitude = position.coords.latitude;
           const longitude = position.coords.longitude;
-          const googleMapsUrl = `https://maps.google.com/maps?q=${encodeURIComponent(
-            "hospital"
-          )}&near=18.529039,73.851624&z=13&output=embed`;
-          
           {% comment %} const googleMapsUrl = `https://maps.google.com/maps?q=${encodeURIComponent(
-            "hospital"
-          )}&near=${latitude},${longitude}&z=13&output=embed`; {% endcomment %}
+            "Daignostic Center"
+          )}&near=18.529039,73.851624&z=13&output=embed`; {% endcomment %}
+          
+          const googleMapsUrl = `https://maps.google.com/maps?q=${encodeURIComponent(
+            "Daignostic Center"
+          )}&near=${latitude},${longitude}&z=13&output=embed`;
 
 
           // Update the iframe src with search results
