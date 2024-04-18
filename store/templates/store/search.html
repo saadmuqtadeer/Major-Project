@@ -1,34 +1,63 @@
-{% extends 'store/main.html' %}
-{% load static %}
-{% block content %}
-    <style>
-        
-    </style>
-    <div class="container-fluid">
-        <div class="row justify-content-center">
-            {% for medicine in medicines %}
-            <div class="col-lg-8 col-md-10 mb-4">
-                <div class="card w-100">
-                    <img class="card-img-top" src="{{ medicine.image_url }}" alt="{{ medicine.name }}">
-                    <div class="card-body text-center">
-                        <h5 class="card-title"><strong>{{ medicine.name }}</strong></h5>
-                        <p class="card-text"><strong>Description:</strong> {{ medicine.description }}</p>
-                        <p class="card-text"><strong>Manufacturer:</strong> {{ medicine.manufacturer }}</p>
-                        <p class="card-text"><strong>Active Ingredients:</strong> {{ medicine.active_ingredients }}</p>
-                        <p class="card-text"><strong>Alcohol Warning:</strong> {{ medicine.alcohol_warning }}</p>
-                        <p class="card-text"><strong>Pregnancy Warning:</strong> {{ medicine.pregnancy_warning }}</p>
-                        <p class="card-text"><strong>Breastfeeding Warning:</strong> {{ medicine.breastfeeding_warning }}</p>
-                        <h6 class="card-subtitle mb-2 text-muted">Price: ${{ medicine.price }}</h6>
-                    </div>
-                    <div class="card-footer">
-                        <div class="d-flex justify-content-between align-items-center">
-                            {% comment %} <button data-product="{{ medicine.id }}" data-action="add" class="btn btn-outline-secondary add-btn update-cart">Add to Cart</button> {% endcomment %}
-                            {% comment %} <a href="{% url 'medicine_detail' medicine.id %}" class="btn btn-outline-success">View Details</a> {% endcomment %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
+{% extends 'store/main.html' %} {% load static %} {% block content %}
+<style></style>
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    {% for medicine in medicines %}
+    <div class="col-lg-8 col-md-10 mb-4">
+      <div class="card w-100">
+        <img
+          class="card-img-top"
+          src="{{ medicine.image_url }}"
+          alt="{{ medicine.name }}"
+        />
+        <div class="card-body text-center">
+          <h5 class="card-title"><strong>{{ medicine.name }}</strong></h5>
+          <p class="card-text">
+            <strong>Description:</strong> {{ medicine.description }}
+          </p>
+          <p class="card-text">
+            <strong>Manufacturer:</strong> {{ medicine.manufacturer }}
+          </p>
+          <p class="card-text">
+            <strong>Active Ingredients:</strong> {{ medicine.active_ingredients
+            }}
+          </p>
+          <p class="card-text">
+            <strong>Alcohol Warning:</strong> {{ medicine.alcohol_warning }}
+          </p>
+          <p class="card-text">
+            <strong>Pregnancy Warning:</strong> {{ medicine.pregnancy_warning }}
+          </p>
+          <p class="card-text">
+            <strong>Breastfeeding Warning:</strong> {{
+            medicine.breastfeeding_warning }}
+          </p>
+          <h6 class="card-subtitle mb-2 text-muted">
+            Price: ${{ medicine.price }}
+          </h6>
         </div>
+        <div class="card-footer">
+          <div class="d-flex justify-content-between align-items-center">
+            {% comment %}
+            <button
+              data-product="{{ medicine.id }}"
+              data-action="add"
+              class="btn btn-outline-secondary add-btn update-cart"
+            >
+              Add to Cart
+            </button>
+            {% endcomment %} {% comment %}
+            <a
+              href="{% url 'medicine_detail' medicine.id %}"
+              class="btn btn-outline-success"
+              >View Details</a
+            >
+            {% endcomment %}
+          </div>
+        </div>
+      </div>
     </div>
+    {% endfor %}
+  </div>
+</div>
 {% endblock content %}

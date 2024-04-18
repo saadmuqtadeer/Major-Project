@@ -1,0 +1,28 @@
+{% extends 'store/main.html' %} {% block content %}
+<h1>Available Doctors</h1>
+<div class="doctors-container">
+  {% for doctor in doctors %}
+  <div class="doctor-card">
+    <h3>{{ doctor.name }}</h3>
+    <p>{{ doctor.specialization }}</p>
+    <button class="appointments-btn" data-doctor-id="{{ doctor.id }}">
+      View Appointments
+    </button>
+  </div>
+  {% endfor %}
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var appointmentButtons = document.querySelectorAll(".appointments-btn");
+
+    appointmentButtons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        var doctorId = this.getAttribute("data-doctor-id");
+        window.location.href = `/doctor-appointments/${doctorId}/`;
+      });
+    });
+  });
+</script>
+
+{% endblock %}

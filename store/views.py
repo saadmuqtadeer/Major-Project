@@ -1,6 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
+from .models import Appointment
+from django.utils import timezone
 import json
+from .models import  Appointment
 import datetime
 from .models import * 
 from .utils import cookieCart, cartData, guestOrder
@@ -163,7 +166,7 @@ def find_related_medicines(medicine):
     search_query = medicine.name
     related_medicines = []
 
-    csv_path = 'C:/Users/saad/OneDrive/Desktop/django_ecommerce_mod5-master/django_ecommerce_mod5-master/store/datasets/1mgadded.csv'  # Replace 'path/to/dataset.csv' with the actual path to your dataset file
+    csv_path = 'C:/Users/rajku/Desktop/major/Major-Project/store/datasets/1mgadded.csv'  # Replace 'path/to/dataset.csv' with the actual path to your dataset file
     names = []
     descriptions = []
     manufacturers = []
@@ -261,4 +264,108 @@ def doctor(request):
     data = cartData(request)
     cartItems = data['cartItems']
     context = {'cartItems': cartItems}
+    
+    if request.method == 'POST':
+        start_time = request.POST.get('start-time')
+        end_time = request.POST.get('end-time')
+        # gmeet_link = request.POST.get('gmeet-link')
+        gmeet_link = "meet.google.com"
+
+        # Get the logged-in doctor (assuming they are authenticated)
+        doctor = request.user  # This is the logged-in user (doctor)
+
+        # Create a new appointment entry
+        appointment = Appointment.objects.create(
+            start_time=start_time,
+            end_time=end_time,
+            doctor_id=doctor.id,  # Assign the ID of the logged-in user as doctor_id
+            doctor_name=doctor.username,  # Assign the username of the logged-in user as doctor_name
+            gmeet=gmeet_link
+        )
+
+        print('Appointment created successfully')
+
+        # Redirect or render success message
+        # return redirect('appointment_success')  
+
     return render(request, 'store/doctor.html', context)
+
+def user_appointments(request):
+    # Get the doctor_id of the logged-in user
+    doctor_id = request.user.id  # Assuming doctor_id is stored as the user ID
+
+    # Retrieve appointments filtered by doctor_id
+    appointments = Appointment.objects.filter(doctor_id=doctor_id)
+
+    # Pass appointments to the template
+    return render(request, 'store/user_appointments.html', {'appointments': appointments})
+
+def cancel_appointment(request, appointment_id):
+    if request.method == 'DELETE':
+        appointment = get_object_or_404(Appointment, id=appointment_id)
+        appointment.delete()
+        return JsonResponse({'message': 'Appointment canceled successfully.'}, status=204)
+    else:
+        return JsonResponse({'error': 'Invalid request method.'}, status=405)
+    
+
+def view_doctors(request):
+    doctors = Customer.objects.filter(user_type='doctor')
+    return render(request, 'store/doctors_list.html', {'doctors': doctors})
+
+# def doctor_appointments(request, doctor_id):
+#     doctor = get_object_or_404(Customer, id=doctor_id, user_type='doctor')
+#     appointments = Appointment.objects.filter(doctor=doctor)
+
+#     return render(request, 'store/doctor_appointments.html', {'doctor': doctor, 'appointments': appointments})
+
+from django.shortcuts import render, get_object_or_404
+from .models import Customer, Appointment
+
+
+def doctor_appointments(request, doctor_id):
+    doctor = get_object_or_404(Customer, id=doctor_id, user_type='doctor')
+    # appointments = Appointment.objects.all()
+    appointments = Appointment.objects.filter(doctor_name=doctor.name)
+    print('doc',doctor_id)
+    print('app',appointments)
+    for i in appointments:
+         print(i)
+
+    return render(request, 'store/doctor_appointments.html', {'doctor': doctor, 'appointments': appointments})
+
+
+def book_appointment(request, appointment_id):
+    print('yes')
+    if request.method == 'POST':
+        print('yes1')
+        appointment = Appointment.objects.get(id=appointment_id)
+
+        # Extract patient information from POST data
+        patient_name = request.POST.get('patient_name')
+        patient_id = request.POST.get('patient_id')
+        print('yes11')
+
+        # Update appointment with patient information
+        appointment.patient_name = patient_name
+        appointment.patient_id = patient_id
+        appointment.save()
+        print('yes111')
+
+        return JsonResponse({'message': 'Appointment booked successfully.'})
+
+    return JsonResponse({'message': 'Invalid request method.'}, status=400)
+
+
+def process_order(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        payment_id = data.get('payment_id')
+        total_amount = data.get('total_amount')
+
+        # Process the order and update status in database
+        # Implement your logic to handle order processing and payment status
+
+        return JsonResponse({'message': 'Order processed successfully.'})
+    else:
+        return JsonResponse({'message': 'Invalid request method.'}, status=400)

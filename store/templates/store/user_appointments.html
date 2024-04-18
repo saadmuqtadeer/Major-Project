@@ -1,0 +1,67 @@
+<!-- In user_appointments.html -->
+
+{% extends 'store/main.html' %} {% block content %}
+<h1>Your Appointments</h1>
+{% if appointments %}
+<ul>
+  {% for appointment in appointments %}
+  <li>
+    <strong>Appointment ID:</strong> {{ appointment.id }}<br />
+    <strong>Start Time:</strong> {{ appointment.start_time }}<br />
+    <strong>End Time:</strong> {{ appointment.end_time }}<br />
+    <strong>Doctor Name:</strong> {{ appointment.doctor_name }}<br />
+    <!-- Display Doctor's Name -->
+    <strong>Doctor ID:</strong> {{ appointment.doctor_id }}<br />
+    <!-- Display Doctor's ID -->
+    <strong>Patient Name:</strong> {{ appointment.patient_name }}<br />
+    <strong>Google Meet Link:</strong> {{ appointment.gmeet }}<br />
+    <button
+      class="cancel-appointment-btn"
+      data-appointment-id="{{ appointment.id }}"
+    >
+      Cancel
+    </button>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>No appointments found.</p>
+{% endif %}
+
+<!-- JavaScript to handle appointment cancellation -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const cancelButtons = document.querySelectorAll(".cancel-appointment-btn");
+
+    cancelButtons.forEach((button) => {
+      button.addEventListener("click", function () {
+        const appointmentId = button.getAttribute("data-appointment-id");
+        const confirmation = confirm(
+          "Are you sure you want to cancel this appointment?"
+        );
+
+        if (confirmation) {
+          fetch(`/cancel-appointment/${appointmentId}/`, {
+            method: "DELETE",
+            headers: {
+              "X-CSRFToken": "{{ csrf_token }}",
+            },
+          })
+            .then((response) => {
+              if (response.ok) {
+                alert("Appointment canceled successfully.");
+                window.location.reload(); // Refresh the page after deletion
+              } else {
+                alert("Failed to cancel appointment.");
+              }
+            })
+            .catch((error) => {
+              console.error("Error canceling appointment:", error);
+              alert("An error occurred. Please try again.");
+            });
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}
