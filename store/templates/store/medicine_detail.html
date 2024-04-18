@@ -1,46 +1,59 @@
-{% extends 'store/main.html' %}
-{% load static %}
-{% block content %}
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-6 d-flex align-items-center justify-content-center">
-                <img class="img-fluid custom-img" src="{{ medicine.image_url }}" alt="{{ medicine.name }}">
-            </div>
-            <div class="col-lg-6">
-                <h2>{{ medicine.name }}</h2>
-                <p><strong>Price:</strong> ${{ medicine.price }}</p>
-                <p><strong>Description:</strong> {{ medicine.description }}</p>
-                <p><strong>Manufacturer:</strong> {{ medicine.manufacturer }}</p>
-                <p><strong>Active Ingredients:</strong> {{ medicine.active_ingredients }}</p>
-                <p><strong>Alcohol Warning:</strong> {{ medicine.alcohol_warning }}</p>
-                <p><strong>Pregnancy Warning:</strong> {{ medicine.pregnancy_warning }}</p>
-                <p><strong>Breastfeeding Warning:</strong> {{ medicine.breastfeeding_warning }}</p>
-            </div>
-        </div>
+{% extends 'store/main.html' %} {% load static %} {% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-lg-6 d-flex align-items-center justify-content-center">
+      <img
+        class="img-fluid custom-img"
+        src="{{ medicine.image_url }}"
+        alt="{{ medicine.name }}"
+      />
     </div>
+    <div class="col-lg-6">
+      <h2>{{ medicine.name }}</h2>
+      <p><strong>Price:</strong> ${{ medicine.price }}</p>
+      <p><strong>Description:</strong> {{ medicine.description }}</p>
+      <p><strong>Manufacturer:</strong> {{ medicine.manufacturer }}</p>
+      <p>
+        <strong>Active Ingredients:</strong> {{ medicine.active_ingredients }}
+      </p>
+      <p><strong>Alcohol Warning:</strong> {{ medicine.alcohol_warning }}</p>
+      <p>
+        <strong>Pregnancy Warning:</strong> {{ medicine.pregnancy_warning }}
+      </p>
+      <p>
+        <strong>Breastfeeding Warning:</strong> {{
+        medicine.breastfeeding_warning }}
+      </p>
+    </div>
+  </div>
+</div>
 
-    <div class="container mt-4">
-        <h3>Alternative Medicines:</h3>
-        <p><em>Use only after doctor's prescription.</em></p>
-        <div class="row">
-            {% for related_medicine in related_medicines %}
-                <div class="col-lg-4 mb-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ related_medicine.name }}</h5>
-                            <p class="card-text">{{ related_medicine.description | truncatewords_html:50 }}</p>
-                            <p class="card-text"><strong>Manufacturer:</strong> {{ related_medicine.manufacturer }}</p>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
+<div class="container mt-4">
+  <h3>Alternative Medicines:</h3>
+  <p><em>Use only after doctor's prescription.</em></p>
+  <div class="row">
+    {% for related_medicine in related_medicines %}
+    <div class="col-lg-4 mb-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">{{ related_medicine.name }}</h5>
+          <p class="card-text">
+            {{ related_medicine.description | truncatewords_html:50 }}
+          </p>
+          <p class="card-text">
+            <strong>Manufacturer:</strong> {{ related_medicine.manufacturer }}
+          </p>
         </div>
+      </div>
     </div>
+    {% endfor %}
+  </div>
+</div>
 {% endblock content %}
 
 <style>
-    .custom-img {
-        width: 100%;
-        max-height: 400px;
-    }
+  .custom-img {
+    width: 100%;
+    max-height: 400px;
+  }
 </style>

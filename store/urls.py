@@ -22,4 +22,10 @@ urlpatterns = [
 	path('search/', views.search, name='search'),
  
 	path('doctor/', views.doctor, name='doctor'),
+    path('user-appointments/', views.user_appointments, name='user_appointments'),
+    path('cancel-appointment/<int:appointment_id>/', views.cancel_appointment, name='cancel_appointment'),
+    path('view-doctors/', views.view_do3ctors, name='view_doctors'),
+    path('doctor-appointments/<int:doctor_id>/', views.doctor_appointments, name='doctor_appointments'),
+   	path('book-appointment/<int:appointment_id>/', views.book_appointment, name='book_appointment'),
+
 ]

@@ -1,0 +1,88 @@
+<!-- doctor_appointments.html -->
+
+{% extends 'store/main.html' %} {% block content %}
+<h1>Appointments for {{ doctor.name }}</h1>
+<ul>
+  {% for appointment in appointments %}
+  <li>
+    <strong>Appointment ID:</strong> {{ appointment.id }}<br />
+    <strong>Start Time:</strong> {{ appointment.start_time }}<br />
+    <strong>End Time:</strong> {{ appointment.end_time }}<br />
+    <strong>Doctor Name:</strong> {{ appointment.doctor_name }}<br />
+    <strong>Doctor ID:</strong> {{ appointment.doctor_id }}<br />
+    <strong>Patient Name:</strong> {{ appointment.patient_name }}<br />
+    <strong>Google Meet Link:</strong> {{ appointment.gmeet }}<br />
+
+    {% if appointment.patient_id %}
+    <!-- Appointment already booked -->
+    <button disabled>Appointment Booked</button>
+    {% else %}
+    <!-- Appointment available for booking -->
+    <button
+      class="book-appointment-btn"
+      data-appointment-id="{{ appointment.id }}"
+      data-patient-name="{{ request.user.username }}"
+      data-patient-id="{{ request.user.id }}"
+    >
+      Book Appointment
+    </button>
+    {% endif %}
+  </li>
+  {% empty %}
+  <li>No appointments available</li>
+  {% endfor %}
+</ul>
+
+<!-- JavaScript to handle appointment booking and disable button -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const bookButtons = document.querySelectorAll(".book-appointment-btn");
+
+    bookButtons.forEach((button) => {
+      const appointmentId = button.getAttribute("data-appointment-id");
+      const isAppointmentBooked = button.parentElement.querySelector(
+        "strong[data-patient-id]"
+      );
+
+      if (isAppointmentBooked) {
+        button.disabled = true; // Disable button if appointment is booked
+      }
+
+      button.addEventListener("click", function () {
+        const patientName = button.getAttribute("data-patient-name");
+        const patientId = button.getAttribute("data-patient-id");
+
+        const confirmation = confirm(
+          "Are you sure you want to book this appointment?"
+        );
+        if (confirmation) {
+          // Make AJAX request to update appointment with patient info
+          fetch(`/book-appointment/${appointmentId}/`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": "{{ csrf_token }}",
+            },
+            body: JSON.stringify({
+              patient_name: patientName,
+              patient_id: patientId,
+            }),
+          })
+            .then((response) => {
+              if (response.ok) {
+                alert("Appointment booked successfully.");
+                window.location.reload(); // Refresh the page after booking
+              } else {
+                alert("Failed to book appointment.");
+              }
+            })
+            .catch((error) => {
+              console.error("Error booking appointment:", error);
+              alert("An error occurred. Please try again.");
+            });
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}

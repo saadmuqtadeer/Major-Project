@@ -1,12 +1,30 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+# class Customer(models.Model):
+#     USER_TYPE_CHOICES = [
+#         ('patient', 'Patient'),
+#         ('doctor', 'Doctor'),
+#     ]
+
+#     user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
+#     name = models.CharField(max_length=200)
+#     email = models.CharField(max_length=200)
+#     user_type = models.CharField(max_length=20, choices=USER_TYPE_CHOICES, default='patient')
+
+#     def __str__(self):
+#         return self.name
+
+from django.db import models
+from django.contrib.auth.models import User
+
 class Customer(models.Model):
     USER_TYPE_CHOICES = [
         ('patient', 'Patient'),
         ('doctor', 'Doctor'),
     ]
-
+    
+    id = models.AutoField(primary_key=True)  # Add an AutoField for the ID
     user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     email = models.CharField(max_length=200)
@@ -14,6 +32,7 @@ class Customer(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Medicine(models.Model):
     name = models.CharField(max_length=200)
@@ -91,3 +110,16 @@ class ShippingAddress(models.Model):
 
 	def __str__(self):
 		return self.address
+
+class Appointment(models.Model):
+    id = models.AutoField(primary_key=True)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    doctor_id = models.IntegerField(blank=True,null=True)  # Store doctor's user ID
+    patient_id = models.IntegerField(blank=True,null=True)  # Store patient's user ID
+    patient_name = models.CharField(max_length=255, blank=True, null=True)
+    gmeet = models.CharField(max_length=255, blank=True, null=True)
+    doctor_name = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return f"Appointment ID: {self.id} | Doctor: {self.doctor_name}"

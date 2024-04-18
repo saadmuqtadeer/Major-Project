@@ -1,11 +1,11 @@
 <!-- user_location_map.html -->
-{% extends 'store/main.html' %}
-{% block title %}User Location Map{% endblock %}
-
+{% extends 'store/main.html' %} {% block title %}User Location Map{% endblock %}
 {% block content %}
 <h1>User Location Map</h1>
 
-<button onclick="searchAndShowOnMap()">Search and Show on Map</button>
+<button onclick="searchAndShowOnMap()" class="btn btn-info rounded-3 mb-3">
+  Search and Show on Map
+</button>
 
 <div id="map-container">
   <iframe
@@ -21,39 +21,39 @@
 </div>
 
 <script>
-function searchAndShowOnMap() {
-    // const searchTerm = document.getElementById("searchTerm").value.trim();
-    // if (!searchTerm) {
-    //   alert("Please enter a search term.");
-    //   return;
-    // }
+  function searchAndShowOnMap() {
+      // const searchTerm = document.getElementById("searchTerm").value.trim();
+      // if (!searchTerm) {
+      //   alert("Please enter a search term.");
+      //   return;
+      // }
 
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        function (position) {
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
-          {% comment %} const googleMapsUrl = `https://maps.google.com/maps?q=${encodeURIComponent(
-            "Daignostic Center"
-          )}&near=18.529039,73.851624&z=13&output=embed`; {% endcomment %}
-          
-          const googleMapsUrl = `https://maps.google.com/maps?q=${encodeURIComponent(
-            "Daignostic Center"
-          )}&near=${latitude},${longitude}&z=13&output=embed`;
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function (position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            {% comment %} const googleMapsUrl = `https://maps.google.com/maps?q=${encodeURIComponent(
+              "Daignostic Center"
+            )}&near=18.529039,73.851624&z=13&output=embed`; {% endcomment %}
+
+            const googleMapsUrl = `https://maps.google.com/maps?q=${encodeURIComponent(
+              "Daignostic Center"
+            )}&near=${latitude},${longitude}&z=13&output=embed`;
 
 
-          // Update the iframe src with search results
-          document.getElementById("gmap_canvas").src = googleMapsUrl;
-        },
-        function (error) {
-          alert("Error retrieving location: " + error.message);
-        }
-      );
-    } else {
-      alert("Geolocation is not supported by your browser.");
+            // Update the iframe src with search results
+            document.getElementById("gmap_canvas").src = googleMapsUrl;
+          },
+          function (error) {
+            alert("Error retrieving location: " + error.message);
+          }
+        );
+      } else {
+        alert("Geolocation is not supported by your browser.");
+      }
     }
-  }
 </script>
 
 {% endblock %}

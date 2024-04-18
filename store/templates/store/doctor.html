@@ -1,6 +1,61 @@
-{% extends 'store/store.html' %}
-{% block content %}
-  <h1>Welcome Doctor!</h1>
-  <p>You can book your slots here:</p>
-  <button class="btn btn-primary">Book a Slot</button>
+{% extends 'store/store.html' %} {% block content %}
+<style>
+  /* Custom CSS for Doctor Booking Form */
+  .doctor-form-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .doctor-booking-form {
+    display: flex;
+    flex-direction: column;
+  }
+
+  label {
+    margin-bottom: 8px;
+    font-weight: bold;
+  }
+
+  input[type="datetime-local"],
+  button {
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+
+  button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #0056b3;
+  }
+</style>
+
+<h1>Book Appointment</h1>
+
+<form method="post" action="{% url 'doctor' %}">
+  {% csrf_token %}
+  <label for="start-time">Start Time:</label>
+  <input type="datetime-local" id="start-time" name="start-time" required />
+
+  <label for="end-time">End Time:</label>
+  <input type="datetime-local" id="end-time" name="end-time" required />
+
+  <button type="submit">Book Appointment</button>
+</form>
+
+<!-- Button to navigate to user appointments -->
+<button onclick="window.location.href = '{% url 'user_appointments' %}';">
+  View Appointments
+</button>
+
 {% endblock %}
